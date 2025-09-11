@@ -1,0 +1,17 @@
+[project]
+name = "snapshot-pepester"
+version = "0.1.0"
+description = "A utility to create structured code snapshots for LLM context generation."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Unlicense" }
+authors = [
+  { name = "Sense1Tapo4ek", email = "egorssupermail@gmail.com" },
+]
+
+dependencies = [
+    "pyyaml>=6.0.2",
+]
+
+[project.scripts]
+snapshoter = "ta_snapshot:main"
