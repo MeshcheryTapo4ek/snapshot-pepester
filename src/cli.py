@@ -6,12 +6,12 @@ import argparse
 from pathlib import Path
 from typing import Dict, List, Optional
 
-# Imports are now relative as this module is inside the package
-from .engine import create_snapshot
-from .paths import remove_pycache
-from .planner import collect_role_categories
-from .selfscan import compute_self_scan_inputs
-from .yaml_loader import load_config_from_yaml, load_roles_from_yaml
+
+from snapshot_utils.engine import create_snapshot
+from snapshot_utils.paths import remove_pycache
+from snapshot_utils.planner import collect_role_categories
+from snapshot_utils.selfscan import compute_self_scan_inputs
+from snapshot_utils.yaml_loader import load_config_from_yaml, load_roles_from_yaml
 
 
 def build_arg_parser() -> argparse.ArgumentParser:

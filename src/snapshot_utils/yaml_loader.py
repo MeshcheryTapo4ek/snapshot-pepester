@@ -95,7 +95,7 @@ def _parse_settings(raw: dict) -> Settings:
     s = raw.get("settings")
     if isinstance(s, dict):
         if "exclude_dirs" in s:
-            exclude_dirs = set(_as_str_list(s["exclude_dirs"], "exclude_dirs", "settings"))
+            exclude_dirs.update(_as_str_list(s["exclude_dirs"], "exclude_dirs", "settings"))
         if "utils_dirs" in s:
             utils_dirs = _as_str_list(s["utils_dirs"], "utils_dirs", "settings")
         if "project_root" in s:

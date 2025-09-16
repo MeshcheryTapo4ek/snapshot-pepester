@@ -7,7 +7,7 @@ DEFAULT_EXCLUDE_DIRS: Set[str] = {
     ".git",
     ".venv",
     "logs",
-    ".env"
+    ".env",
     "__pycache__",
     "build",
     "dist",
