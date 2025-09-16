@@ -1,15 +1,17 @@
-#!/usr/bin/env python3
+# src/cli.py
+
 from __future__ import annotations
 
 import argparse
 from pathlib import Path
 from typing import Dict, List, Optional
 
-from snapshot_utils.engine import create_snapshot
-from snapshot_utils.paths import remove_pycache
-from snapshot_utils.planner import collect_role_categories
-from snapshot_utils.selfscan import compute_self_scan_inputs
-from snapshot_utils.yaml_loader import load_config_from_yaml, load_roles_from_yaml
+# Imports are now relative as this module is inside the package
+from .engine import create_snapshot
+from .paths import remove_pycache
+from .planner import collect_role_categories
+from .selfscan import compute_self_scan_inputs
+from .yaml_loader import load_config_from_yaml, load_roles_from_yaml
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
@@ -18,7 +20,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     add = parser.add_argument
     add("--role", type=str, help="Role name as defined in the YAML config.")
-    add("--config", type=str, default="tools/ta_roles.yaml", help="Path to the YAML config file.")
+    add("--config", type=str, default="ta_roles.yaml", help="Path to the YAML config file.")
     add("--include-utils", action="store_true", help="Include 'utils' directories from settings into Internal Logic.")
     add("--hide-files", action="store_true", help="Do NOT include file contents (paths only).")
     add("--self-scan", action="store_true", help="Scan only the snapshot tool itself.")
@@ -58,7 +60,16 @@ def main() -> None:
         print(f"Docs root: {docs_root}")
     print(f"Using config: {cfg_path}")
 
-    output_snapshot_file = project_root / "snapshot.json"
+    # --- Измененная логика для определения пути к snapshot.json ---
+    if args.dirs:
+        first_path = Path(args.dirs[0]).resolve()
+        if first_path.is_dir():
+            output_snapshot_file = first_path / "snapshot.json"
+        else:
+            output_snapshot_file = first_path.parent / "snapshot.json"
+    else:
+        output_snapshot_file = project_root / "snapshot.json"
+    # --- Конец измененной логики ---
 
     # Build categories depending on mode
     if args.dirs:
@@ -73,7 +84,7 @@ def main() -> None:
         categories = {
             "Self-Scan": compute_self_scan_inputs(
                 project_root=project_root,
-                cli_file=Path(__file__).resolve(),
+                cli_file=Path(__file__).resolve().parent.parent, # Adjust path to point to package root
                 config_path=cfg_path,
             )
         }

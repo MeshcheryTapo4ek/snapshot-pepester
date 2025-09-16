@@ -14,4 +14,4 @@ dependencies = [
 ]
 
 [project.scripts]
-snapshoter = "ta_snapshot:main"
+snapshoter = "src.cli:main"
