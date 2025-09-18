@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-from typing import Dict, Iterable, List, Set
+from collections.abc import Iterable
 
 from .models import Role
 
 
 def collect_role_categories(
-    roles: Dict[str, Role],
+    roles: dict[str, Role],
     selected_role: str,
     include_utils: bool,
-    utils_dirs: List[str],
-) -> Dict[str, List[str]]:
+    utils_dirs: list[str],
+) -> dict[str, list[str]]:
     """
     Build categorized scan sources for a role using the new schema.
 
@@ -28,18 +28,18 @@ def collect_role_categories(
 
     r: Role = roles[selected_role]
 
-    def add_all(target: Set[str], items: Iterable[str]) -> None:
+    def add_all(target: set[str], items: Iterable[str]) -> None:
         for it in items:
             if it:
                 target.add(it.rstrip("/"))
 
     # Own sets
-    domain_self: Set[str] = set()
-    ports_self: Set[str] = set()
-    internal_self: Set[str] = set()
-    base_self: Set[str] = set()
-    adv_self: Set[str] = set()
-    docs_self: Set[str] = set()
+    domain_self: set[str] = set()
+    ports_self: set[str] = set()
+    internal_self: set[str] = set()
+    base_self: set[str] = set()
+    adv_self: set[str] = set()
+    docs_self: set[str] = set()
 
     add_all(domain_self, r.external_domain)
     add_all(ports_self, r.external_ports)
@@ -51,9 +51,9 @@ def collect_role_categories(
         add_all(internal_self, utils_dirs)
 
     # Imported contributions
-    domain_imports: Set[str] = set()
-    ports_imports: Set[str] = set()
-    base_imports: Set[str] = set()
+    domain_imports: set[str] = set()
+    ports_imports: set[str] = set()
+    base_imports: set[str] = set()
 
     for dep_name in r.imports:
         dep = roles.get(dep_name)

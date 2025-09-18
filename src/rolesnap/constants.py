@@ -1,9 +1,7 @@
 from __future__ import annotations
 
-from typing import List, Set
-
 # Defaults kept as fallback; real values should come from YAML settings
-DEFAULT_EXCLUDE_DIRS: Set[str] = {
+DEFAULT_EXCLUDE_DIRS: set[str] = {
     ".git",
     ".venv",
     "logs",
@@ -15,4 +13,4 @@ DEFAULT_EXCLUDE_DIRS: Set[str] = {
     ".pytest_cache",
 }
 
-DEFAULT_UTILS_DIRS: List[str] = []
+DEFAULT_UTILS_DIRS: list[str] = []

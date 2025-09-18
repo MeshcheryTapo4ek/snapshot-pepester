@@ -5,6 +5,7 @@ from pathlib import Path
 
 from ..logging import console
 
+
 def resolve_scan_path(root: Path, raw: str) -> Path:
     """
     Resolve a raw path from YAML against the provided project root.
@@ -23,9 +24,9 @@ def resolve_scan_path(root: Path, raw: str) -> Path:
     # Find longest l > 0 where raw_parts[:l] == root_parts[-l:]
     max_l = 0
     max_l_candidate = min(len(raw_parts), len(root_parts))
-    for l in range(1, max_l_candidate + 1):
-        if raw_parts[:l] == root_parts[-l:]:
-            max_l = l
+    for line_count in range(1, max_l_candidate + 1):
+        if raw_parts[:line_count] == root_parts[-line_count:]:
+            max_l = line_count
 
     # If overlap exists, drop the overlapping prefix from raw
     tail_parts = raw_parts[max_l:] if max_l > 0 else raw_parts

@@ -1,22 +1,21 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Dict, List, Optional, Set
 
 import yaml
 
-from .models import Config, Role, Settings
 from ..constants import DEFAULT_EXCLUDE_DIRS, DEFAULT_UTILS_DIRS
+from .models import Config, Role, Settings
 
 
-def _as_str_list(value: object, field_name: str, ctx_name: str) -> List[str]:
+def _as_str_list(value: object, field_name: str, ctx_name: str) -> list[str]:
     """Normalize to list[str] and validate."""
     if value is None:
         return []
     if isinstance(value, str):
         return [value]
     if isinstance(value, list):
-        out: List[str] = []
+        out: list[str] = []
         for i, v in enumerate(value):
             if not isinstance(v, str):
                 raise TypeError(
@@ -29,16 +28,18 @@ def _as_str_list(value: object, field_name: str, ctx_name: str) -> List[str]:
     )
 
 
-def _as_opt_str(value: object, field_name: str, ctx_name: str) -> Optional[str]:
+def _as_opt_str(value: object, field_name: str, ctx_name: str) -> str | None:
     """Normalize to Optional[str]."""
     if value is None:
         return None
     if isinstance(value, str):
         return value
-    raise TypeError(f"'{ctx_name}': field '{field_name}' must be a string if provided, got {type(value).__name__}")
+    raise TypeError(
+        f"'{ctx_name}': field '{field_name}' must be a string if provided, got {type(value).__name__}"
+    )
 
 
-def _validate_roles(roles: Dict[str, Role]) -> None:
+def _validate_roles(roles: dict[str, Role]) -> None:
     """Ensure imported roles exist and no cycles."""
     for name, role in roles.items():
         for dep in role.imports:
@@ -64,8 +65,8 @@ def _validate_roles(roles: Dict[str, Role]) -> None:
             dfs(role_name)
 
 
-def _parse_roles(raw_roles: dict) -> Dict[str, Role]:
-    roles: Dict[str, Role] = {}
+def _parse_roles(raw_roles: dict) -> dict[str, Role]:
+    roles: dict[str, Role] = {}
     for name, data in raw_roles.items():
         if not isinstance(data, dict):
             raise ValueError(f"Role '{name}' must be a mapping.")
@@ -86,11 +87,11 @@ def _parse_roles(raw_roles: dict) -> Dict[str, Role]:
     return roles
 
 
-def _parse_settings(raw: dict) -> Settings:
-    exclude_dirs: Set[str] = set(DEFAULT_EXCLUDE_DIRS)
-    utils_dirs: List[str] = list(DEFAULT_UTILS_DIRS)
-    project_root: Optional[str] = None
-    docs_root: Optional[str] = None
+def _parse_settings(raw: dict[str, dict]) -> Settings:
+    exclude_dirs: set[str] = set(DEFAULT_EXCLUDE_DIRS)
+    utils_dirs: list[str] = list(DEFAULT_UTILS_DIRS)
+    project_root: str | None = None
+    docs_root: str | None = None
 
     s = raw.get("settings")
     if isinstance(s, dict):
@@ -126,6 +127,6 @@ def load_config_from_yaml(config_path: Path) -> Config:
     return Config(roles=roles, settings=settings)
 
 
-def load_roles_from_yaml(config_path: Path) -> Dict[str, Role]:
+def load_roles_from_yaml(config_path: Path) -> dict[str, Role]:
     """Backward-compat for existing callers (self-scan)."""
     return load_config_from_yaml(config_path).roles

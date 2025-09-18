@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import argparse
 import os
+import sys
 from pathlib import Path
-from typing import Dict, List, Optional
 
 from dotenv import load_dotenv
+
 from rolesnap import __version__
 from rolesnap.core.engine import create_snapshot
 from rolesnap.core.paths import remove_pycache
@@ -24,17 +25,20 @@ BANNER = r"""
                                                    `--'    
 """
 
+
 def _load_project_root(cfg_path: Path) -> Path:
     cfg = load_config_from_yaml(cfg_path)
     pr = cfg.settings.project_root
     return Path(pr).expanduser().resolve() if pr else Path.cwd().resolve()
 
-def _load_docs_root(cfg_path: Path) -> Optional[Path]:
+
+def _load_docs_root(cfg_path: Path) -> Path | None:
     cfg = load_config_from_yaml(cfg_path)
     dr = cfg.settings.docs_root
     return Path(dr).expanduser().resolve() if dr else None
 
-def _resolve_config_path(cwd: Path, cli_config: Optional[str]) -> Path:
+
+def _resolve_config_path(cwd: Path, cli_config: str | None) -> Path:
     if cli_config:
         p = Path(cli_config).expanduser()
         if not p.is_absolute():
@@ -48,7 +52,10 @@ def _resolve_config_path(cwd: Path, cli_config: Optional[str]) -> Path:
     env_val = os.getenv("ROLESNAP_CONFIG")
     if not env_val:
         console.print("ROLESNAP_CONFIG is not set and --config is not provided.", style="error")
-        console.print("Hint: add 'ROLESNAP_CONFIG=./rolesnap.yaml' to your .env or pass --config /abs/path/to/rolesnap.yaml", style="muted")
+        console.print(
+            "Hint: add 'ROLESNAP_CONFIG=./rolesnap.yaml' to your .env or pass --config /abs/path/to/rolesnap.yaml",
+            style="muted",
+        )
         raise SystemExit(2)
 
     p = Path(env_val).expanduser()
@@ -61,7 +68,8 @@ def _resolve_config_path(cwd: Path, cli_config: Optional[str]) -> Path:
     console.print(f"Using config from ENV ROLESNAP_CONFIG: [path]{p}[/path]", style="info")
     return p
 
-def _common_after_config(cfg_path: Path) -> tuple[Path, Optional[Path]]:
+
+def _common_after_config(cfg_path: Path) -> tuple[Path, Path | None]:
     project_root = _load_project_root(cfg_path)
     docs_root = _load_docs_root(cfg_path)
     console.print(f"Project root: [path]{project_root}[/path]", style="muted")
@@ -70,10 +78,13 @@ def _common_after_config(cfg_path: Path) -> tuple[Path, Optional[Path]]:
     console.print(f"Using config: [path]{cfg_path}[/path]", style="muted")
     return project_root, docs_root
 
-def _cmd_full(cfg_path: Path, show_files: bool, output: Optional[Path], max_bytes: Optional[int], quiet: bool) -> None:
+
+def _cmd_full(
+    cfg_path: Path, show_files: bool, output: Path | None, max_bytes: int | None, quiet: bool
+) -> None:
     project_root, _ = _common_after_config(cfg_path)
     remove_pycache(project_root)
-    categories: Dict[str, List[str]] = {"Full Project": [project_root.as_posix()]}
+    categories: dict[str, list[str]] = {"Full Project": [project_root.as_posix()]}
     create_snapshot(
         project_root=project_root,
         output_file=output or project_root / "rolesnap.json",
@@ -85,7 +96,16 @@ def _cmd_full(cfg_path: Path, show_files: bool, output: Optional[Path], max_byte
         quiet=quiet,
     )
 
-def _cmd_role(cfg_path: Path, role_name: str, include_utils: bool, show_files: bool, output: Optional[Path], max_bytes: Optional[int], quiet: bool) -> None:
+
+def _cmd_role(
+    cfg_path: Path,
+    role_name: str,
+    include_utils: bool,
+    show_files: bool,
+    output: Path | None,
+    max_bytes: int | None,
+    quiet: bool,
+) -> None:
     project_root, docs_root = _common_after_config(cfg_path)
     cfg = load_config_from_yaml(cfg_path)
     remove_pycache(project_root)
@@ -95,7 +115,9 @@ def _cmd_role(cfg_path: Path, role_name: str, include_utils: bool, show_files: b
         include_utils=include_utils,
         utils_dirs=cfg.settings.utils_dirs,
     )
-    category_roots = {k: (docs_root if k == "Docs" and docs_root else project_root) for k in categories}
+    category_roots = {
+        k: (docs_root if k == "Docs" and docs_root else project_root) for k in categories
+    }
     create_snapshot(
         project_root=project_root,
         output_file=output or project_root / "rolesnap.json",
@@ -107,7 +129,10 @@ def _cmd_role(cfg_path: Path, role_name: str, include_utils: bool, show_files: b
         quiet=quiet,
     )
 
-def _cmd_selfscan(cfg_path: Path, show_files: bool, output: Optional[Path], max_bytes: Optional[int], quiet: bool) -> None:
+
+def _cmd_selfscan(
+    cfg_path: Path, show_files: bool, output: Path | None, max_bytes: int | None, quiet: bool
+) -> None:
     project_root, _ = _common_after_config(cfg_path)
     _ = load_roles_from_yaml(cfg_path)
     remove_pycache(project_root)
@@ -129,10 +154,12 @@ def _cmd_selfscan(cfg_path: Path, show_files: bool, output: Optional[Path], max_
         quiet=quiet,
     )
 
+
 def _cmd_validate(cfg_path: Path) -> None:
     cfg = load_config_from_yaml(cfg_path)
     missing = []
     pr = Path(cfg.settings.project_root or Path.cwd()).resolve()
+
     def _check(paths: list[str]):
         for raw in paths:
             p = Path(raw)
@@ -140,14 +167,23 @@ def _cmd_validate(cfg_path: Path) -> None:
                 p = (pr / raw).resolve()
             if not p.exists():
                 missing.append(raw)
-    for name, role in cfg.roles.items():
-        _check(role.external_ports + role.external_domain + role.internal_logic + role.base_tasks + role.advanced_tasks + role.docs)
+
+    for _, role in cfg.roles.items():
+        _check(
+            role.external_ports
+            + role.external_domain
+            + role.internal_logic
+            + role.base_tasks
+            + role.advanced_tasks
+            + role.docs
+        )
     if missing:
         console.print("Config valid, but missing paths:", style="warn")
         for m in sorted(set(missing)):
             console.print(f" - {m}", style="path")
         raise SystemExit(2)
     console.print(f"Config OK. Roles: {', '.join(sorted(cfg.roles.keys()))}", style="success")
+
 
 def _cmd_init() -> None:
     """Create a default rolesnap.yaml in docs/roles."""
@@ -156,12 +192,16 @@ def _cmd_init() -> None:
     roles_dir.mkdir(parents=True, exist_ok=True)
     config_path = roles_dir / "rolesnap.yaml"
     if config_path.exists():
-        console.print(f"Configuration file already exists at [path]{config_path}[/path]", style="warn")
+        console.print(
+            f"Configuration file already exists at [path]{config_path}[/path]", style="warn"
+        )
         return
 
     example_path = Path(__file__).parent.parent.parent / "examples" / "rolesnap_example.yaml"
     if not example_path.exists():
-        console.print(f"Could not find example configuration at [path]{example_path}[/path]", style="error")
+        console.print(
+            f"Could not find example configuration at [path]{example_path}[/path]", style="error"
+        )
         raise SystemExit(1)
 
     content = example_path.read_text()
@@ -169,34 +209,53 @@ def _cmd_init() -> None:
     content = content.replace("/path/to/your/project", str(Path.cwd()))
     config_path.write_text(content)
     console.print(f"Created configuration file at [path]{config_path}[/path]", style="success")
-    console.print("Please review the file and adjust the paths to your project structure.", style="info")
+    console.print(
+        "Please review the file and adjust the paths to your project structure.", style="info"
+    )
+
 
 def build_arg_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(description="Create a structured JSON snapshot grouped by categories.")
-    parser.add_argument("--config", type=str, default=None, help="Path to rolesnap.yaml. If not set, uses ROLESNAP_CONFIG from .env/env.")
-    parser.add_argument("--hide-files", action="store_true", help="Do NOT include file contents (paths only).")
+    parser = argparse.ArgumentParser(
+        description="Create a structured JSON snapshot grouped by categories."
+    )
+    parser.add_argument(
+        "--config",
+        type=str,
+        default=None,
+        help="Path to rolesnap.yaml. If not set, uses ROLESNAP_CONFIG from .env/env.",
+    )
+    parser.add_argument(
+        "--hide-files", action="store_true", help="Do NOT include file contents (paths only)."
+    )
     parser.add_argument("--no-banner", action="store_true", help="Do not display the banner.")
     parser.add_argument("--version", action="store_true", help="Display the version and exit.")
-    parser.add_argument("--quiet", action="store_true", help="Minimal output, no banner or progress.")
+    parser.add_argument(
+        "--quiet", action="store_true", help="Minimal output, no banner or progress."
+    )
     parser.add_argument("--output", type=Path, default=None, help="Path to write the snapshot to.")
-    parser.add_argument("--max-bytes", type=int, default=None, help="Truncate file contents to N bytes.")
+    parser.add_argument(
+        "--max-bytes", type=int, default=None, help="Truncate file contents to N bytes."
+    )
     parser.add_argument("--no-color", action="store_true", help="Disable color output.")
 
     subs = parser.add_subparsers(dest="cmd")
 
-    p_full = subs.add_parser("full", help="Scan entire project_root with excludes.")
+    subs.add_parser("full", help="Scan entire project_root with excludes.")
 
     p_role = subs.add_parser("role", help="Scan a single role defined in rolesnap.yaml.")
     p_role.add_argument("name", type=str, help="Role name to scan.")
-    p_role.add_argument("--include-utils", action="store_true", help="Include 'utils' dirs into Internal Logic.")
+    p_role.add_argument(
+        "--include-utils", action="store_true", help="Include 'utils' dirs into Internal Logic."
+    )
 
-    p_self = subs.add_parser("selfscan", help="Scan the rolesnap tool itself.")
+    subs.add_parser("selfscan", help="Scan the rolesnap tool itself.")
 
-    p_val = subs.add_parser("validate", help="Validate rolesnap.yaml and paths.")
+    subs.add_parser("validate", help="Validate rolesnap.yaml and paths.")
 
-    p_init = subs.add_parser("init", help="Create a default rolesnap.yaml in docs/roles.")
+    subs.add_parser("init", help="Create a default rolesnap.yaml in docs/roles.")
 
     return parser
+
 
 def main() -> None:
     parser = build_arg_parser()
@@ -204,6 +263,7 @@ def main() -> None:
 
     if args.no_color or not os.sys.stdout.isatty():
         from rolesnap.logging import reinit_console
+
         reinit_console(color_system=None)
 
     if args.quiet:
@@ -212,7 +272,7 @@ def main() -> None:
     if args.version:
         console.print(f"rolesnap version {__version__}", style="info")
         raise SystemExit(0)
-    
+
     if args.cmd == "init":
         _cmd_init()
         return
@@ -234,7 +294,9 @@ def main() -> None:
         _cmd_full(cfg_path, show_files, args.output, args.max_bytes, quiet)
         return
     if args.cmd == "role":
-        _cmd_role(cfg_path, args.name, args.include_utils, show_files, args.output, args.max_bytes, quiet)
+        _cmd_role(
+            cfg_path, args.name, args.include_utils, show_files, args.output, args.max_bytes, quiet
+        )
         return
     if args.cmd == "selfscan":
         _cmd_selfscan(cfg_path, show_files, args.output, args.max_bytes, quiet)

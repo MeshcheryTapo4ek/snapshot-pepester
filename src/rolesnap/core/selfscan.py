@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 from pathlib import Path
-from typing import List, Set
 
 from .paths import safe_rel_key
 
-def compute_self_scan_inputs(project_root: Path, cli_file: Path, config_path: Path) -> List[str]:
+
+def compute_self_scan_inputs(project_root: Path, cli_file: Path, config_path: Path) -> list[str]:
     """
     Build a list of paths so that self-scan covers:
       - the CLI file,
@@ -13,8 +13,8 @@ def compute_self_scan_inputs(project_root: Path, cli_file: Path, config_path: Pa
       - the YAML config used.
     Prefer relative POSIX keys; skip missing entries; deduplicate results.
     """
-    results: List[str] = []
-    seen: Set[str] = set()
+    results: list[str] = []
+    seen: set[str] = set()
 
     def add(path: Path) -> None:
         if not path.exists():
@@ -32,6 +32,7 @@ def compute_self_scan_inputs(project_root: Path, cli_file: Path, config_path: Pa
     pkg_candidate: Path | None = None
     try:
         import rolesnap.core as su
+
         pkg_candidate = Path(su.__file__).resolve().parent
     except Exception:
         pkg_candidate = None

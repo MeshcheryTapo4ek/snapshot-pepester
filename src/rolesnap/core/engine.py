@@ -2,29 +2,54 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Dict, List, Optional, Set
 
-from rich.progress import Progress, SpinnerColumn, BarColumn, TextColumn, TimeElapsedColumn
+from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn, TimeElapsedColumn
+
 from ..logging import console
 from .paths import resolve_scan_path, safe_rel_key
 
 BINARY_EXTENSIONS = {
-    ".png", ".jpg", ".jpeg", ".gif", ".bmp", ".ico", ".tif", ".tiff",
-    ".pdf", ".doc", ".docx", ".xls", ".xlsx", ".ppt", ".pptx",
-    ".zip", ".tar", ".gz", ".7z", ".rar",
-    ".exe", ".dll", ".so", ".a", ".lib", ".o", ".obj",
-    ".pyc", ".pyd",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".gif",
+    ".bmp",
+    ".ico",
+    ".tif",
+    ".tiff",
+    ".pdf",
+    ".doc",
+    ".docx",
+    ".xls",
+    ".xlsx",
+    ".ppt",
+    ".pptx",
+    ".zip",
+    ".tar",
+    ".gz",
+    ".7z",
+    ".rar",
+    ".exe",
+    ".dll",
+    ".so",
+    ".a",
+    ".lib",
+    ".o",
+    ".obj",
+    ".pyc",
+    ".pyd",
     ".ipynb",
 }
+
 
 def create_snapshot(
     project_root: Path,
     output_file: Path,
-    categories: Dict[str, List[str]],
+    categories: dict[str, list[str]],
     show_files: bool,
-    exclude_dirs: Set[str],
-    category_roots: Optional[Dict[str, Path]] = None,
-    max_bytes: Optional[int] = None,
+    exclude_dirs: set[str],
+    category_roots: dict[str, Path] | None = None,
+    max_bytes: int | None = None,
     quiet: bool = False,
 ) -> None:
     """
@@ -34,8 +59,8 @@ def create_snapshot(
         console.print("No categories provided. Nothing to do.", style="warn")
         return
 
-    all_counts: Dict[str, int] = {}
-    snapshot: Dict[str, Dict[str, str]] = {}
+    all_counts: dict[str, int] = {}
+    snapshot: dict[str, dict[str, str]] = {}
 
     with Progress(
         SpinnerColumn(),
@@ -53,8 +78,8 @@ def create_snapshot(
 
             root_for_cat = (category_roots or {}).get(cat, project_root)
 
-            resolved_paths: List[Path] = []
-            seen: Set[Path] = set()
+            resolved_paths: list[Path] = []
+            seen: set[Path] = set()
             for raw in raw_items:
                 p = resolve_scan_path(root_for_cat, raw)
                 rp = p.resolve()
@@ -67,8 +92,8 @@ def create_snapshot(
                 pretty_sources = ", ".join(safe_rel_key(root_for_cat, p) for p in resolved_paths)
                 console.print(f"[category]{cat}[/category] from [path]{pretty_sources}[/path]")
 
-            cat_data: Dict[str, str] = {}
-            files_list: List[Path] = []
+            cat_data: dict[str, str] = {}
+            files_list: list[Path] = []
 
             for scan_path in resolved_paths:
                 if not scan_path.exists():
@@ -81,7 +106,8 @@ def create_snapshot(
                     files_list.append(scan_path)
 
             files_list = [
-                p for p in files_list
+                p
+                for p in files_list
                 if not any(part in exclude_dirs for part in p.parts)
                 and p.resolve() != output_file.resolve()
                 and p.suffix not in BINARY_EXTENSIONS
@@ -122,7 +148,10 @@ def create_snapshot(
         )
         if not quiet:
             total = sum(all_counts.values())
-            console.print(f"Snapshot created with {total} file(s) across {len(snapshot)} categor(ies).", style="success")
+            console.print(
+                f"Snapshot created with {total} file(s) across {len(snapshot)} categor(ies).",
+                style="success",
+            )
             console.print(f"Output file: [path]{output_file}[/path]", style="muted")
     except Exception as e:
         console.print(f"Failed to write snapshot file: {e}", style="error")
