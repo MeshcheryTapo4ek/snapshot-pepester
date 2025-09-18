@@ -17,10 +17,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
+        with: { python-version: ${{ matrix.python-version }} }
       - run: pipx install uv
-
       - name: Cache uv
         uses: actions/cache@v4
         with:
@@ -28,22 +26,17 @@ jobs:
           key: uv-${{ runner.os }}-${{ matrix.python-version }}-${{ hashFiles('pyproject.toml') }}
           restore-keys: |
             uv-${{ runner.os }}-${{ matrix.python-version }}-
-
       - name: Install project (dev)
         run: uv pip install --system -e .[dev]
-
       - name: Ruff lint
         run: ruff check .
         continue-on-error: true
-
       - name: Ruff format check
         run: ruff format --check .
         continue-on-error: true
-
       - name: Mypy
         run: mypy src
         continue-on-error: true
-
       - name: Tests
         run: pytest -q
         continue-on-error: true
@@ -54,10 +47,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - run: pipx install build
-      - run: python -m build
+        with: { python-version: "3.11" }
+      - run: pipx install uv
+      - run: uvx build
       - name: Upload dist artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -67,14 +59,25 @@ jobs:
   docs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
+        with: { python-version: "3.11" }
       - run: pipx install uv
       - run: uvx --from mkdocs mkdocs --version
       - name: Build docs
         run: uvx --with mkdocs-material mkdocs build --strict
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./site
       - name: Deploy to GitHub Pages
-        run: uvx --with mkdocs-material mkdocs gh-deploy --force
+        id: deployment
+        uses: actions/deploy-pages@v4
