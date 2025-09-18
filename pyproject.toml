@@ -1,7 +1,7 @@
 [project]
-name = "snapshot-pepester"
-version = "0.1.0"
-description = "A utility to create structured code snapshots for LLM context generation."
+name = "rolesnap"
+version = "0.5.0"
+description = "A CLI tool for creating role-based, structured snapshots of your codebase, perfect for generating LLM context and enforcing architectural boundaries."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Unlicense" }
@@ -9,15 +9,34 @@ authors = [
   { name = "Sense1Tapo4ek", email = "egorssupermail@gmail.com" },
 ]
 
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "License :: Public Domain",
+  "Topic :: Software Development :: Build Tools",
+  "Typing :: Typed",
+]
+
+keywords = ["architecture", "snapshot", "LLM", "hexagonal", "modules"]
+
 dependencies = [
-    "pyyaml>=6.0.2",
+  "pyyaml>=6.0.2",
+  "python-dotenv>=1.0.1",
+  "rich>=13.7.1"
 ]
 
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.setuptools]
-py-modules = ["cli"]
-
 [project.scripts]
-snapshoter = "cli:main"
+rolesnap = "rolesnap.cli:main"
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+select = ["E","F","I","UP","B"]

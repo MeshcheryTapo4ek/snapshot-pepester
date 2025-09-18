@@ -3,6 +3,7 @@ from __future__ import annotations
 import shutil
 from pathlib import Path
 
+from ..logging import console
 
 def resolve_scan_path(root: Path, raw: str) -> Path:
     """
@@ -42,13 +43,14 @@ def safe_rel_key(root: Path, path: Path) -> str:
 
 def remove_pycache(root: Path) -> None:
     """Recursively remove all '__pycache__' directories under the root."""
-    print(f"🧹 Removing __pycache__ folders in '{root}'...")
+    console.print(f"🧹 Removing __pycache__ folders in '{root}'...", style="muted")
     count = 0
     for path in root.rglob("__pycache__"):
         if path.is_dir():
             shutil.rmtree(path)
             count += 1
-    print(f"Found and removed {count} __pycache__ folder(s).")
+    if count > 0:
+        console.print(f"Found and removed {count} __pycache__ folder(s).", style="muted")
 
 
 def _walk_up(p: Path) -> list[Path]:

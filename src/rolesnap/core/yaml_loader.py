@@ -6,7 +6,7 @@ from typing import Dict, List, Optional, Set
 import yaml
 
 from .models import Config, Role, Settings
-from .constants import DEFAULT_EXCLUDE_DIRS, DEFAULT_UTILS_DIRS
+from ..constants import DEFAULT_EXCLUDE_DIRS, DEFAULT_UTILS_DIRS
 
 
 def _as_str_list(value: object, field_name: str, ctx_name: str) -> List[str]:

@@ -9,7 +9,7 @@ def compute_self_scan_inputs(project_root: Path, cli_file: Path, config_path: Pa
     """
     Build a list of paths so that self-scan covers:
       - the CLI file,
-      - the snapshot_utils package (resolved dynamically),
+      - the rolesnap.core package (resolved dynamically),
       - the YAML config used.
     Prefer relative POSIX keys; skip missing entries; deduplicate results.
     """
@@ -28,10 +28,10 @@ def compute_self_scan_inputs(project_root: Path, cli_file: Path, config_path: Pa
     # 1) CLI file
     add(cli_file)
 
-    # 2) snapshot_utils package: try import-based resolution first
+    # 2) rolesnap.core package: try import-based resolution first
     pkg_candidate: Path | None = None
     try:
-        import snapshot_utils as su  # type: ignore
+        import rolesnap.core as su
         pkg_candidate = Path(su.__file__).resolve().parent
     except Exception:
         pkg_candidate = None
@@ -40,8 +40,8 @@ def compute_self_scan_inputs(project_root: Path, cli_file: Path, config_path: Pa
         add(pkg_candidate)
 
     # Fallback candidates: project root and CLI directory
-    add(project_root / "snapshot_utils")
-    add(cli_file.parent / "snapshot_utils")
+    add(project_root / "rolesnap" / "core")
+    add(cli_file.parent / "core")
 
     # 3) YAML config
     add(config_path)

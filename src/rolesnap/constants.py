@@ -15,4 +15,4 @@ DEFAULT_EXCLUDE_DIRS: Set[str] = {
     ".pytest_cache",
 }
 
-DEFAULT_UTILS_DIRS: List[str] = ["trading_agent/utils"]
+DEFAULT_UTILS_DIRS: List[str] = []

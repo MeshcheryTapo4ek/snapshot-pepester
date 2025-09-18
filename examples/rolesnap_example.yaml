@@ -1,5 +1,5 @@
 # ==============================================================================
-#  Snapshot Pester - Role-Based Configuration
+#  Rolesnap - Role-Based Configuration
 # ==============================================================================
 # This file defines the architectural components ("Roles") of your project.
 # A role represents a logical unit of functionality, like a microservice,
