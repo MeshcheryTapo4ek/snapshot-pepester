@@ -15,11 +15,13 @@ from rolesnap.core.yaml_loader import load_config_from_yaml, load_roles_from_yam
 from rolesnap.logging import console
 
 BANNER = r"""
- ____            _           _   
-|  _ \ ___  _ __| |_ ___ _ __| |_ 
-| |_) / _ \| '__| __/ _ \ '__| __|
-|  _ < (_) | |  | ||  __/ |  | |_ 
-|_| \_\___/|_|   \__\___|_|   \__|
+                                                           
+,------.        ,--.        ,---.                          
+|  .--. ' ,---. |  | ,---. '   .-' ,--,--,  ,--,--. ,---.  
+|  '--'.'| .-. ||  || .-. :`.  `-. |      \' ,-.  || .-. | 
+|  |\  \ ' '-' '|  |\   --..-'    ||  ||  |\ '-'  || '-' ' 
+`--' '--' `---' `--' `----'`-----' `--''--' `--`--'|  |-'  
+                                                   `--'    
 """
 
 def _load_project_root(cfg_path: Path) -> Path:
@@ -147,6 +149,28 @@ def _cmd_validate(cfg_path: Path) -> None:
         raise SystemExit(2)
     console.print(f"Config OK. Roles: {', '.join(sorted(cfg.roles.keys()))}", style="success")
 
+def _cmd_init() -> None:
+    """Create a default rolesnap.yaml in docs/roles."""
+    console.print("Initializing rolesnap configuration...", style="info")
+    roles_dir = Path.cwd() / "docs" / "roles"
+    roles_dir.mkdir(parents=True, exist_ok=True)
+    config_path = roles_dir / "rolesnap.yaml"
+    if config_path.exists():
+        console.print(f"Configuration file already exists at [path]{config_path}[/path]", style="warn")
+        return
+
+    example_path = Path(__file__).parent.parent.parent / "examples" / "rolesnap_example.yaml"
+    if not example_path.exists():
+        console.print(f"Could not find example configuration at [path]{example_path}[/path]", style="error")
+        raise SystemExit(1)
+
+    content = example_path.read_text()
+    # Replace the placeholder project_root with the current working directory
+    content = content.replace("/path/to/your/project", str(Path.cwd()))
+    config_path.write_text(content)
+    console.print(f"Created configuration file at [path]{config_path}[/path]", style="success")
+    console.print("Please review the file and adjust the paths to your project structure.", style="info")
+
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Create a structured JSON snapshot grouped by categories.")
     parser.add_argument("--config", type=str, default=None, help="Path to rolesnap.yaml. If not set, uses ROLESNAP_CONFIG from .env/env.")
@@ -170,6 +194,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
 
     p_val = subs.add_parser("validate", help="Validate rolesnap.yaml and paths.")
 
+    p_init = subs.add_parser("init", help="Create a default rolesnap.yaml in docs/roles.")
+
     return parser
 
 def main() -> None:
@@ -186,6 +212,10 @@ def main() -> None:
     if args.version:
         console.print(f"rolesnap version {__version__}", style="info")
         raise SystemExit(0)
+    
+    if args.cmd == "init":
+        _cmd_init()
+        return
 
     if not args.no_banner and not args.quiet:
         console.print(BANNER, style="muted")

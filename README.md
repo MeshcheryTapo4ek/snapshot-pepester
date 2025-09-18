@@ -1,9 +1,40 @@
 # Rolesnap
 
-[![Python version](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
-[![License: Unlicense](https://img.shields.io/badge/license-Unlicense-blue.svg)](http://unlicense.org/)
+[![PyPI](https://img.shields.io/pypi/v/rolesnap.svg)](https://pypi.org/project/rolesnap/)
+![Python](https://img.shields.io/pypi/pyversions/rolesnap.svg)
+[![CI](https://github.com/MeshcheryTapo4ek/snapshot-pepester/actions/workflows/ci.yml/badge.svg)](https://github.com/MeshcheryTapo4ek/snapshot-pepester/actions/workflows/ci.yml)
+[![Docs](https://img.shields.io/badge/docs-mkdocs--material-success)](https://meshcherytapo4ek.github.io/snapshot-pepester/)
+[![Code style](https://img.shields.io/badge/ruff-mypy-informational)](#)
 
 A CLI tool for creating role-based, structured snapshots of your codebase, perfect for generating LLM context and enforcing architectural boundaries.
+
+## Quickstart
+
+```bash
+pipx install rolesnap          # option 1: global and isolated
+# or
+uv tool install rolesnap       # option 2: as a tool via uv
+
+rolesnap --version
+```
+
+### Install options
+```bash
+# Into a project:
+uv add rolesnap
+uv run rolesnap full --config rolesnap.yaml
+```
+
+---
+
+## Why Rolesnap?
+
+*   **Precision Context for LLMs**: Stop feeding excess code to your AI. Generate focused snapshots containing only the files relevant to a specific feature, service, or architectural layer.
+*   **Declarative Architecture**: Define your project's components as "Roles" in a simple YAML file. This configuration becomes a living, executable document of your system's architecture.
+*   **Enforce Architectural Boundaries**: By explicitly defining the public API of each module, the tool helps you visualize and maintain a clean, modular, or hexagonal architecture.
+
+> [!TIP]
+> For a deep dive, check out the full documentation at **https://meshcherytapo4ek.github.io/snapshot-pepester/**
 
 ---
 

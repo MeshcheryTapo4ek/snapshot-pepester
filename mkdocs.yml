@@ -1,0 +1,21 @@
+site_name: Rolesnap
+repo_url: https://github.com/MeshcheryTapo4ek/snapshot-pepester
+theme:
+  name: material
+  features:
+    - navigation.instant
+    - content.code.copy
+markdown_extensions:
+  - admonition
+  - toc
+  - footnotes
+  - tables
+nav:
+  - Home: index.md
+  - Installation: install.md
+  - Quickstart: quickstart.md
+  - Configuration: config.md
+  - CLI Reference: cli.md
+  - Examples: examples.md
+  - Recipes: recipes.md
+  - Changelog: changelog.md

@@ -1,17 +1,17 @@
 [project]
 name = "rolesnap"
-version = "0.5.0"
-description = "A CLI tool for creating role-based, structured snapshots of your codebase, perfect for generating LLM context and enforcing architectural boundaries."
+version = "0.6.0"
+description = "Structured, role-based code snapshots for LLMs. Enforce architecture boundaries."
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "Unlicense" }
-authors = [
-  { name = "Sense1Tapo4ek", email = "egorssupermail@gmail.com" },
-]
+authors = [{ name = "Sense1Tapo4ek", email = "egorssupermail@gmail.com" }]
 
 classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
   "Environment :: Console",
   "Intended Audience :: Developers",
   "License :: Public Domain",
@@ -19,13 +19,19 @@ classifiers = [
   "Typing :: Typed",
 ]
 
-keywords = ["architecture", "snapshot", "LLM", "hexagonal", "modules"]
+keywords = ["architecture","snapshot","LLM","hexagonal","modules","context","monorepo"]
 
 dependencies = [
   "pyyaml>=6.0.2",
   "python-dotenv>=1.0.1",
   "rich>=13.7.1"
 ]
+
+[project.urls]
+Homepage = "https://github.com/MeshcheryTapo4ek/snapshot-pepester"
+Changelog = "https://github.com/MeshcheryTapo4ek/snapshot-pepester/blob/main/CHANGELOG.md"
+Issues = "https://github.com/MeshcheryTapo4ek/snapshot-pepester/issues"
+Documentation = "https://meshcherytapo4ek.github.io/snapshot-pepester"
 
 [tool.setuptools.packages.find]
 where = ["src"]
@@ -34,9 +40,15 @@ where = ["src"]
 rolesnap = "rolesnap.cli:main"
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = ["pytest","mypy","ruff","pre-commit","types-PyYAML","hypothesis"]
 
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-select = ["E","F","I","UP","B"]
+select = ["E","F","I","UP","B","TCH"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_unused_ignores = true
+no_implicit_optional = true
