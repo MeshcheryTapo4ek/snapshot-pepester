@@ -57,7 +57,7 @@ jobs:
           python-version: "3.11"
       - run: pipx install uv
       - name: Build sdist/wheel
-        run: uvx build
+        run: uvx --from build pyproject-build
       - name: Upload dist artifacts
         uses: actions/upload-artifact@v4
         with:

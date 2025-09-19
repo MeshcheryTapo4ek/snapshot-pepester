@@ -32,7 +32,7 @@ jobs:
           uvx --version || true
 
       - name: Build sdist and wheel
-        run: uvx build
+        run: uvx --from build pyproject-build
 
       - name: Verify version matches tag if tag present
         shell: bash
