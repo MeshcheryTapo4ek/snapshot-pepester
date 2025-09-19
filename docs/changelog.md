@@ -5,6 +5,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.2] - 2025-09-19
+
+### Fixed
+
+- The `rolesnap init` command now correctly finds the template file in installed packages by bundling `rolesnap_example.yaml` as package data and using `importlib.resources` to access it.
+
+### Added
+
+- A comprehensive documentation overhaul, including:
+  - A new, more detailed Quickstart guide.
+  - A complete `rolesnap.yaml` configuration reference.
+  - New pages for Recipes, FAQ, and How-It-Works.
+  - An expanded CLI reference with examples for every command.
+
 ## [0.6.1] - 2025-09-18
 
 ### Changed

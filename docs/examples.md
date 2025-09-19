@@ -1,56 +1,7 @@
 # Examples
 
-Here are some common ways to use `rolesnap`.
+This page has been deprecated. For detailed examples, please see:
 
-## Full Project Snapshot
+- **[Configuration Recipes](./recipes.md)**: For complete, copy-pastable `rolesnap.yaml` examples for different architectures (Monorepo, Hexagonal, etc.).
 
-To get a snapshot of the entire project, use the `full` command.
-
-**Command:**
-```bash
-rolesnap full
-```
-
-**Output:**
-
-This will create a `rolesnap.json` file containing all the files in the project, respecting the `exclude_dirs` in your `rolesnap.yaml`.
-
-```json
-{
-  "Full Project": {
-    "src/rolesnap/cli.py": "...",
-    "src/rolesnap/core/engine.py": "...",
-    ...
-  }
-}
-```
-
-## Role-based Snapshot
-
-To get a snapshot of a specific role, use the `role` command.
-
-**Command:**
-```bash
-rolesnap role auth_service
-```
-
-**Output:**
-
-This will create a `rolesnap.json` file containing only the files related to the `auth_service` role and its dependencies.
-
-```json
-{
-  "External Ports": {
-    "services/auth/ports/api.py": "..."
-  },
-  "External Domain": {
-    "domain/user_model.py": "..."
-  },
-  "Internal Logic": {
-    "services/auth/main.py": "..."
-  },
-  "Imported/shared_kernel": {
-    "shared/ports/events.py": "..."
-  }
-}
-```
+- **[CLI Reference](./cli.md)**: For examples of each command and its expected output.

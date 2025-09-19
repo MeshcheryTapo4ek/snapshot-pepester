@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import os
 import sys
+from importlib import resources
 from pathlib import Path
 
 from dotenv import load_dotenv
@@ -197,16 +198,32 @@ def _cmd_init() -> None:
         )
         return
 
-    example_path = Path(__file__).parent.parent.parent / "examples" / "rolesnap_example.yaml"
-    if not example_path.exists():
-        console.print(
-            f"Could not find example configuration at [path]{example_path}[/path]", style="error"
-        )
+    example_path: Path | None = None
+    try:
+        # rolesnap/examples/rolesnap_example.yaml inside package
+        with resources.as_file(resources.files("rolesnap").joinpath("examples/rolesnap_example.yaml")) as p:
+            example_path = p
+    except Exception:
+        example_path = None
+
+    if example_path is None or not example_path.exists():
+        # last resort: repo layout for dev installs
+        candidate = Path(__file__).parent / "examples" / "rolesnap_example.yaml"
+        example_path = candidate if candidate.exists() else None
+
+    if example_path is None:
+        console.print("Could not find example configuration inside the package.", style="error")
         raise SystemExit(1)
 
     content = example_path.read_text()
     # Replace the placeholder project_root with the current working directory
     content = content.replace("/path/to/your/project", str(Path.cwd()))
+
+    # Also replace docs_root if a 'docs' directory exists in the current directory
+    docs_dir = Path.cwd() / "docs"
+    if docs_dir.is_dir():
+        content = content.replace("/path/to/your/docs", str(docs_dir.resolve()))
+
     config_path.write_text(content)
     console.print(f"Created configuration file at [path]{config_path}[/path]", style="success")
     console.print(
