@@ -116,3 +116,35 @@ For example:
 > *[...paste content of rolesnap.json here...]*
 
 You have now successfully created and used your first snapshot!
+
+---
+
+## Alternative: The 30-Second Snapshot (No Config)
+
+If you just want a quick snapshot of a single directory without creating a configuration file, use the `dir` command.
+
+**1. Navigate to your project:**
+```bash
+cd /path/to/your/project
+```
+
+**2. Run the `dir` command:**
+```bash
+# This will scan the 'services/api' directory
+rolesnap dir services/api
+```
+
+**3. Use the result:**
+- A `rolesnap.json` file is created **inside** the `services/api` directory.
+- You can copy its contents just like in the main example.
+
+```json
+{
+  "Scanned Directory": {
+    "services/api/__init__.py": "",
+    "services/api/main.py": "..."
+  }
+}
+```
+
+This is a great way to quickly grab context for a specific feature or component.

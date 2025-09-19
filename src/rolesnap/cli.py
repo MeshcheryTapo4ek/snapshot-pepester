@@ -13,6 +13,7 @@ from rolesnap.core.engine import create_snapshot
 from rolesnap.core.paths import remove_pycache
 from rolesnap.core.planner import collect_role_categories
 from rolesnap.core.selfscan import compute_self_scan_inputs
+from rolesnap.constants import DEFAULT_EXCLUDE_DIRS
 from rolesnap.core.yaml_loader import load_config_from_yaml, load_roles_from_yaml
 from rolesnap.logging import console
 
@@ -78,6 +79,31 @@ def _common_after_config(cfg_path: Path) -> tuple[Path, Path | None]:
         console.print(f"Docs root:    [path]{docs_root}[/path]", style="muted")
     console.print(f"Using config: [path]{cfg_path}[/path]", style="muted")
     return project_root, docs_root
+
+
+def _cmd_dir(
+    path_str: str, show_files: bool, output: Path | None, max_bytes: int | None, quiet: bool
+) -> None:
+    scan_path = Path(path_str).expanduser().resolve()
+    if not scan_path.is_dir():
+        console.print(f"Error: Path is not a directory: {scan_path}", style="error")
+        raise SystemExit(1)
+
+    console.print(f"Scanning directory: [path]{scan_path}[/path]", style="info")
+    remove_pycache(scan_path)
+    categories: dict[str, list[str]] = {"Scanned Directory": [scan_path.as_posix()]}
+    output_file = output or scan_path / "rolesnap.json"
+
+    create_snapshot(
+        project_root=scan_path,
+        output_file=output_file,
+        categories=categories,
+        show_files=show_files,
+        exclude_dirs=DEFAULT_EXCLUDE_DIRS,
+        category_roots={"Scanned Directory": scan_path},
+        max_bytes=max_bytes,
+        quiet=quiet,
+    )
 
 
 def _cmd_full(
@@ -257,6 +283,9 @@ def build_arg_parser() -> argparse.ArgumentParser:
 
     subs = parser.add_subparsers(dest="cmd")
 
+    p_dir = subs.add_parser("dir", help="Scan a single directory with default excludes.")
+    p_dir.add_argument("path", type=str, help="Path to the directory to scan.")
+
     subs.add_parser("full", help="Scan entire project_root with excludes.")
 
     p_role = subs.add_parser("role", help="Scan a single role defined in rolesnap.yaml.")
@@ -297,11 +326,16 @@ def main() -> None:
     if not args.no_banner and not args.quiet:
         console.print(BANNER, style="muted")
 
+    show_files: bool = not bool(args.hide_files)
+    quiet: bool = args.quiet
+
+    if args.cmd == "dir":
+        _cmd_dir(args.path, show_files, args.output, args.max_bytes, quiet)
+        return
+
     load_dotenv(override=False)
     cwd = Path.cwd().resolve()
     cfg_path = _resolve_config_path(cwd=cwd, cli_config=args.config)
-    show_files: bool = not bool(args.hide_files)
-    quiet: bool = args.quiet
 
     if args.cmd == "validate":
         _cmd_validate(cfg_path)

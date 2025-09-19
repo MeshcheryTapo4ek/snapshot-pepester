@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.7.0] - 2025-09-19
+
+### Added
+
+- `dir` command: a new mode to scan a single directory without requiring a `rolesnap.yaml` file. It uses sensible default exclusions and saves the output to `rolesnap.json` inside the target directory.
+
 ## [0.6.2] - 2025-09-19
 
 ### Fixed

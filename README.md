@@ -13,21 +13,42 @@ Stop manually copy-pasting files. Define your project's architectural "roles" in
 
 ## Quickstart
 
-From zero to a perfect snapshot in 5 commands.
+### The 5-Second Way 
 
-**1. Install `rolesnap`:**
+Need a snapshot of a single directory? Use the `dir` command.
+
 ```bash
+# 1. Install the tool
 uv tool install rolesnap
+
+# 2. Scan a directory
+rolesnap dir /path/to/your/project/src/api
 ```
 
-**2. Initialize in your project:**
+That's it. A `rolesnap.json` file is created in `src/api`, ready to be used.
+
+```json
+{
+  "Scanned Directory": {
+    "src/api/main.py": "...",
+    "src/api/routes.py": "..."
+  }
+}
+```
+
+### The 5-Command Way (Full Project Configuration)
+
+For more control and to model your entire architecture, use a `rolesnap.yaml` file.
+
+
+**1. Initialize in your project:**
 ```bash
 cd /path/to/your/project
 rolesnap init
 ```
 This creates a template config at `docs/roles/rolesnap.yaml`.
 
-**3. Configure a role:**
+**2. Configure a role:**
 
 Tell `rolesnap` about your `api` service. Edit `docs/roles/rolesnap.yaml`:
 ```yaml
@@ -42,7 +63,7 @@ roles:
     imports: []
 ```
 
-**4. Generate the snapshot:**
+**3. Generate the snapshot:**
 ```bash
 # Set the config path for your shell session
 export ROLESNAP_CONFIG=./docs/roles/rolesnap.yaml
@@ -51,7 +72,7 @@ export ROLESNAP_CONFIG=./docs/roles/rolesnap.yaml
 rolesnap role api
 ```
 
-**5. Use the result:**
+**4. Use the result:**
 
 You get a clean, structured `rolesnap.json` file, ready for your LLM.
 ```json

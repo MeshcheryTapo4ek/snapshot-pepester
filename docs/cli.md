@@ -23,6 +23,38 @@ These flags can be used with any command.
 
 ## Commands
 
+### `rolesnap dir <path>`
+
+Scans a single directory with default exclusions, without needing a `rolesnap.yaml` file. This is the quickest way to get a snapshot of a specific part of your project.
+
+**Usage:**
+```bash
+# Scan the 'src/api' directory
+rolesnap dir src/api
+```
+
+**Output:**
+- A `rolesnap.json` file is created inside `src/api`.
+
+**With Optional Flags:**
+```bash
+# Scan 'src/api' and save the output to a different file
+rolesnap dir src/api --output my-api-snapshot.json
+```
+
+**Example JSON Output (`rolesnap.json`):**
+```json
+{
+  "Scanned Directory": {
+    "__init__.py": "",
+    "api/v1/endpoint.py": "...",
+    "main.py": "..."
+  }
+}
+```
+
+---
+
 ### `rolesnap init`
 
 Initializes a new configuration file from a template.
