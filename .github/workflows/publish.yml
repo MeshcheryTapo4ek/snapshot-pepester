@@ -6,6 +6,7 @@ on:
   push:
     tags:
       - "v*"
+      - "*.*.*" 
 
 permissions:
   contents: read
@@ -19,7 +20,8 @@ jobs:
 
       - name: Set up Python
         uses: actions/setup-python@v5
-        with: { python-version: "3.11" }
+        with:
+          python-version: "3.11"
 
       - name: Install uv
         run: pipx install uv
@@ -43,8 +45,10 @@ print(d["project"]["version"])
 PY
 )
           echo "pyproject version: ${PKG_VER}"
+
           if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
-            TAG_VER="${GITHUB_REF_NAME#v}"
+            RAW_TAG="${GITHUB_REF_NAME}"
+            TAG_VER="${RAW_TAG#v}"
             echo "tag version: ${TAG_VER}"
             test "${PKG_VER}" = "${TAG_VER}" || { echo "Version mismatch"; exit 1; }
           fi
@@ -52,5 +56,5 @@ PY
       - name: Publish to PyPI via OIDC
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
-          # skip-existing: true  # включай, если хочешь, чтобы пуш тэгов не падал, когда версия уже есть
+          # skip-existing: true
           verbose: true

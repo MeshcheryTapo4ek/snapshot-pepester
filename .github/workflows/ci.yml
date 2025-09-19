@@ -1,8 +1,13 @@
 name: CI
 
 on:
-  push: { branches: [main] }
+  push:
+    branches: [main]
+    tags:
+      - "v*"
+      - "*.*.*"
   pull_request:
+  workflow_dispatch:
 
 concurrency:
   group: ci-${{ github.ref }}
@@ -17,7 +22,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: ${{ matrix.python-version }} }
+        with:
+          python-version: ${{ matrix.python-version }}
       - run: pipx install uv
       - name: Cache uv
         uses: actions/cache@v4
@@ -47,9 +53,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: "3.11" }
+        with:
+          python-version: "3.11"
       - run: pipx install uv
-      - run: uvx build
+      - name: Build sdist/wheel
+        run: uvx build
       - name: Upload dist artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -69,15 +77,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
-        with: { python-version: "3.11" }
+        with:
+          python-version: "3.11"
       - run: pipx install uv
-      - run: uvx --from mkdocs mkdocs --version
+
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Show mkdocs versions
+        run: |
+          uvx --from mkdocs mkdocs --version
+          uvx --from mkdocs-material pip show mkdocs-material || true
+
       - name: Build docs
         run: uvx --with mkdocs-material mkdocs build --strict
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./site
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
