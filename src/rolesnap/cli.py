@@ -10,10 +10,10 @@ from dotenv import load_dotenv
 
 from rolesnap import __version__
 from rolesnap.core.engine import create_snapshot
-from rolesnap.core.paths import remove_pycache
+from rolesnap.core.paths import remove_pycache, resolve_config_path
 from rolesnap.core.planner import collect_role_categories
 from rolesnap.core.selfscan import compute_self_scan_inputs
-from rolesnap.constants import DEFAULT_EXCLUDE_DIRS
+from rolesnap.constants import DEFAULT_EXCLUDE_DIRS, DEFAULT_MAX_FILE_SIZE_BYTES
 from rolesnap.core.yaml_loader import load_config_from_yaml, load_roles_from_yaml
 from rolesnap.logging import console
 
@@ -40,37 +40,6 @@ def _load_docs_root(cfg_path: Path) -> Path | None:
     return Path(dr).expanduser().resolve() if dr else None
 
 
-def _resolve_config_path(cwd: Path, cli_config: str | None) -> Path:
-    if cli_config:
-        p = Path(cli_config).expanduser()
-        if not p.is_absolute():
-            p = (cwd / p).resolve()
-        if not p.is_file():
-            console.print(f"--config file not found: {p}", style="error")
-            raise SystemExit(2)
-        console.print(f"Using config from --config: [path]{p}[/path]", style="info")
-        return p
-
-    env_val = os.getenv("ROLESNAP_CONFIG")
-    if not env_val:
-        console.print("ROLESNAP_CONFIG is not set and --config is not provided.", style="error")
-        console.print(
-            "Hint: add 'ROLESNAP_CONFIG=./rolesnap.yaml' to your .env or pass --config /abs/path/to/rolesnap.yaml",
-            style="muted",
-        )
-        raise SystemExit(2)
-
-    p = Path(env_val).expanduser()
-    if not p.is_absolute():
-        p = (cwd / p).resolve()
-    if not p.is_file():
-        console.print(f"ROLESNAP_CONFIG points to non-existing file: {p}", style="error")
-        raise SystemExit(2)
-
-    console.print(f"Using config from ENV ROLESNAP_CONFIG: [path]{p}[/path]", style="info")
-    return p
-
-
 def _common_after_config(cfg_path: Path) -> tuple[Path, Path | None]:
     project_root = _load_project_root(cfg_path)
     docs_root = _load_docs_root(cfg_path)
@@ -82,15 +51,20 @@ def _common_after_config(cfg_path: Path) -> tuple[Path, Path | None]:
 
 
 def _cmd_dir(
-    path_str: str, show_files: bool, output: Path | None, max_bytes: int | None, quiet: bool
+    path_str: str,
+    show_files: bool,
+    output: Path | None,
+    quiet: bool,
+    max_file_size: int,
 ) -> None:
+    """Execute the 'dir' command to scan a single directory."""
     scan_path = Path(path_str).expanduser().resolve()
     if not scan_path.is_dir():
         console.print(f"Error: Path is not a directory: {scan_path}", style="error")
         raise SystemExit(1)
 
     console.print(f"Scanning directory: [path]{scan_path}[/path]", style="info")
-    remove_pycache(scan_path)
+    remove_pycache(scan_path, quiet=quiet)
     categories: dict[str, list[str]] = {"Scanned Directory": [scan_path.as_posix()]}
     output_file = output or scan_path / "rolesnap.json"
 
@@ -101,16 +75,21 @@ def _cmd_dir(
         show_files=show_files,
         exclude_dirs=DEFAULT_EXCLUDE_DIRS,
         category_roots={"Scanned Directory": scan_path},
-        max_bytes=max_bytes,
         quiet=quiet,
+        max_file_size=max_file_size,
     )
 
 
 def _cmd_full(
-    cfg_path: Path, show_files: bool, output: Path | None, max_bytes: int | None, quiet: bool
+    cfg_path: Path,
+    show_files: bool,
+    output: Path | None,
+    quiet: bool,
+    max_file_size: int,
 ) -> None:
+    """Execute the 'full' command to scan the entire project."""
     project_root, _ = _common_after_config(cfg_path)
-    remove_pycache(project_root)
+    remove_pycache(project_root, quiet=quiet)
     categories: dict[str, list[str]] = {"Full Project": [project_root.as_posix()]}
     create_snapshot(
         project_root=project_root,
@@ -119,8 +98,8 @@ def _cmd_full(
         show_files=show_files,
         exclude_dirs=load_config_from_yaml(cfg_path).settings.exclude_dirs,
         category_roots={"Full Project": project_root},
-        max_bytes=max_bytes,
         quiet=quiet,
+        max_file_size=max_file_size,
     )
 
 
@@ -130,12 +109,13 @@ def _cmd_role(
     include_utils: bool,
     show_files: bool,
     output: Path | None,
-    max_bytes: int | None,
     quiet: bool,
+    max_file_size: int,
 ) -> None:
+    """Execute the 'role' command to scan a specific role."""
     project_root, docs_root = _common_after_config(cfg_path)
     cfg = load_config_from_yaml(cfg_path)
-    remove_pycache(project_root)
+    remove_pycache(project_root, quiet=quiet)
     categories = collect_role_categories(
         roles=cfg.roles,
         selected_role=role_name,
@@ -152,21 +132,26 @@ def _cmd_role(
         show_files=show_files,
         exclude_dirs=cfg.settings.exclude_dirs,
         category_roots=category_roots,
-        max_bytes=max_bytes,
         quiet=quiet,
+        max_file_size=max_file_size,
     )
 
 
 def _cmd_selfscan(
-    cfg_path: Path, show_files: bool, output: Path | None, max_bytes: int | None, quiet: bool
+    cfg_path: Path,
+    show_files: bool,
+    output: Path | None,
+    quiet: bool,
+    max_file_size: int,
 ) -> None:
+    """Execute the 'selfscan' command to scan the tool's own source code."""
     project_root, _ = _common_after_config(cfg_path)
     _ = load_roles_from_yaml(cfg_path)
-    remove_pycache(project_root)
+    remove_pycache(project_root, quiet=quiet)
     categories = {
         "Self-Scan": compute_self_scan_inputs(
             project_root=project_root,
-            cli_file=Path(__file__).resolve().parent.parent,
+            cli_dir=Path(__file__).resolve().parent.parent,
             config_path=cfg_path,
         )
     }
@@ -177,12 +162,13 @@ def _cmd_selfscan(
         show_files=show_files,
         exclude_dirs=load_config_from_yaml(cfg_path).settings.exclude_dirs,
         category_roots={"Self-Scan": project_root},
-        max_bytes=max_bytes,
         quiet=quiet,
+        max_file_size=max_file_size,
     )
 
 
 def _cmd_validate(cfg_path: Path) -> None:
+    """Execute the 'validate' command to check the configuration file."""
     cfg = load_config_from_yaml(cfg_path)
     missing = []
     pr = Path(cfg.settings.project_root or Path.cwd()).resolve()
@@ -213,7 +199,7 @@ def _cmd_validate(cfg_path: Path) -> None:
 
 
 def _cmd_init() -> None:
-    """Create a default rolesnap.yaml in docs/roles."""
+    """Execute the 'init' command to create a default configuration file."""
     console.print("Initializing rolesnap configuration...", style="info")
     roles_dir = Path.cwd() / "docs" / "roles"
     roles_dir.mkdir(parents=True, exist_ok=True)
@@ -258,6 +244,15 @@ def _cmd_init() -> None:
 
 
 def build_arg_parser() -> argparse.ArgumentParser:
+    """
+    Build the argument parser for the CLI.
+
+    This function defines all commands, subcommands, and flags that the user
+    can interact with.
+
+    Returns:
+        The configured ArgumentParser instance.
+    """
     parser = argparse.ArgumentParser(
         description="Create a structured JSON snapshot grouped by categories."
     )
@@ -277,7 +272,10 @@ def build_arg_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--output", type=Path, default=None, help="Path to write the snapshot to.")
     parser.add_argument(
-        "--max-bytes", type=int, default=None, help="Truncate file contents to N bytes."
+        "--max-file-size",
+        type=int,
+        default=DEFAULT_MAX_FILE_SIZE_BYTES,
+        help=f"Skip files larger than N bytes. Default: {DEFAULT_MAX_FILE_SIZE_BYTES} (2 MiB).",
     )
     parser.add_argument("--no-color", action="store_true", help="Disable color output.")
 
@@ -304,6 +302,7 @@ def build_arg_parser() -> argparse.ArgumentParser:
 
 
 def main() -> None:
+    """The main entry point for the rolesnap CLI."""
     parser = build_arg_parser()
     args = parser.parse_args()
 
@@ -330,31 +329,37 @@ def main() -> None:
     quiet: bool = args.quiet
 
     if args.cmd == "dir":
-        _cmd_dir(args.path, show_files, args.output, args.max_bytes, quiet)
+        _cmd_dir(args.path, show_files, args.output, quiet, args.max_file_size)
         return
 
     load_dotenv(override=False)
     cwd = Path.cwd().resolve()
-    cfg_path = _resolve_config_path(cwd=cwd, cli_config=args.config)
+    cfg_path = resolve_config_path(cwd=cwd, cli_config=args.config)
 
     if args.cmd == "validate":
         _cmd_validate(cfg_path)
         return
 
     if args.cmd == "full":
-        _cmd_full(cfg_path, show_files, args.output, args.max_bytes, quiet)
+        _cmd_full(cfg_path, show_files, args.output, quiet, args.max_file_size)
         return
     if args.cmd == "role":
         _cmd_role(
-            cfg_path, args.name, args.include_utils, show_files, args.output, args.max_bytes, quiet
+            cfg_path,
+            args.name,
+            args.include_utils,
+            show_files,
+            args.output,
+            quiet,
+            args.max_file_size,
         )
         return
     if args.cmd == "selfscan":
-        _cmd_selfscan(cfg_path, show_files, args.output, args.max_bytes, quiet)
+        _cmd_selfscan(cfg_path, show_files, args.output, quiet, args.max_file_size)
         return
 
     # default: full
-    _cmd_full(cfg_path, show_files, args.output, args.max_bytes, quiet)
+    _cmd_full(cfg_path, show_files, args.output, quiet, args.max_file_size)
 
 
 if __name__ == "__main__":

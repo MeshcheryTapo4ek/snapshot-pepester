@@ -12,6 +12,8 @@ Instead of manually copying files or dumping an entire directory, you define the
 
 - **Highly Configurable**: Use a simple `rolesnap.yaml` file to define roles, exclude boilerplate, and fine-tune your snapshots to perfectly match your project's structure.
 
+- **Smarter & Safer by Default**: Comes with a comprehensive default exclusion list for caches, logs, and media files, and automatically skips files larger than 2 MiB to keep snapshots focused and efficient.
+
 - **Simple & Fast CLI**: A clean, modern command-line interface makes it easy to integrate `rolesnap` into your development workflow.
 
 ## Get Started

@@ -7,31 +7,31 @@ This page explains the internal mechanics of how `rolesnap` collects files and c
 When you run a command like `rolesnap role <name>`, the process begins by collecting a list of files:
 
 1.  **Resolve Roots**: The tool first identifies the root paths for each category (e.g., `Internal Logic`, `Collected Domain`) based on your `rolesnap.yaml`.
-2.  **Recursive Scan**: It then performs a recursive scan (`rglob`) within these root paths to find all files.
+2.  **Efficient Traversal**: It then performs an efficient, top-down directory walk (`os.walk`) starting from these roots. This allows the tool to prune (i.e., not descend into) entire directory trees that match an exclusion pattern, significantly speeding up the scan on large projects.
 3.  **Deduplication**: All collected file paths are resolved to their absolute paths, and any duplicates are removed.
 
 ## 2. File Exclusion
 
-Once the initial list of files is gathered, a series of filters are applied to exclude irrelevant files:
+During the directory traversal, a series of filters are applied to exclude irrelevant files and directories:
 
-- **Binary Extensions**: Files with common binary extensions are ignored. This is because they are not useful as text-based context for an LLM. The list includes (but is not limited to): `.png`, `.jpg`, `.gif`, `.pdf`, `.doc`, `.zip`, `.tar`, `.gz`, `.pyc`, `.ipynb`.
+- **`exclude_dirs` Patterns**: The tool checks if a directory or file matches any of the **glob patterns** in `settings.exclude_dirs`. The matching is performed against both the full relative path (e.g., `**/__pycache__/**`) and against individual path segments (e.g., `.venv`, `*.log`). This check is done without resolving symlinks, ensuring that directories like a symlinked `.venv` are correctly excluded.
 
-- **`exclude_dirs`**: The tool checks if any part of a file's absolute path contains a name from the `settings.exclude_dirs` list in your configuration. For example, if `exclude_dirs` contains `"node_modules"`, then any file path like `/path/to/project/node_modules/library/file.js` will be excluded.
+- **Default Exclusions**: `rolesnap` comes with a comprehensive default list of exclusions for common caches (`__pycache__`, `.mypy_cache`), build artifacts (`*.egg-info`), logs, and various media file types (`.png`, `.jpg`, `.mp4`, etc.).
 
 - **Output File**: The snapshot output file itself (e.g., `rolesnap.json`) is always excluded to prevent it from including itself in the next run.
-
-- **Gitignore**: In a Git repository, files and directories matching patterns in `.gitignore` may also be excluded.
 
 ## 3. Content Handling
 
 For every file that passes the exclusion filters, its content is read and processed:
 
-- **Default**: The file is read as a UTF-8 encoded text file.
+- **`--max-file-size`**: The tool first checks the file's size on disk. If it's larger than the value of this flag (default 2 MiB), the file is not read at all. Instead, its content is replaced with the marker `"<skipped_large_file>"`.
 
-- **`--max-bytes`**: If you provide this flag (e.g., `--max-bytes 50000`), the tool will read the file, but if the content exceeds the specified number of bytes, it will be truncated. This is a safety measure to prevent snapshots from becoming excessively large.
+- **`--hide-files`**: If you use this flag, the tool does not read the file content. The value for the file in the final JSON will simply be the string `"<hidden>"`.
 
-- **`--hide-files`**: If you use this flag, the tool does not read the file content at all. Instead, the value for the file in the final JSON will simply be the string `"<hidden>"`.
+- **Default Read**: If the file is not skipped or hidden, it is read as a UTF-8 encoded text file.
 
 - **Unicode Errors**: If a file cannot be decoded as UTF-8, it is silently skipped.
+
+- **Empty Directories**: If a path specified in a role is a directory that turns out to be empty (or only contains excluded files), it will be represented by an entry with the marker `"<empty_dir>"`.
 
 Finally, all the collected file paths and their processed content are organized into the category map and written to the output JSON file.

@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.0] - 2025-09-20
+
+### Added
+
+- `--max-file-size` flag to skip reading files larger than a specified size (default 2 MiB), preventing large binaries from being processed.
+
+### Changed
+
+- The `exclude_dirs` logic now uses glob pattern matching instead of simple string contains. This allows for more flexible and powerful exclusion rules like `*.egg-info`, `**/__pycache__/**`, etc.
+- The default exclusion list has been significantly expanded to include common build artifacts, caches, media files, and logs for cleaner snapshots out-of-the-box.
+
+### Fixed
+
+- Patterns like `*.egg-info` in `exclude_dirs` now work correctly.
+
 ## [0.7.0] - 2025-09-19
 
 ### Added
@@ -60,4 +75,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Legacy `snapshoter` entry point.
-- `requirements.txt` in favor of `pyproject.toml`.
+- `requirements.txt` in favor of `pyproject.toml`

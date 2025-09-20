@@ -23,12 +23,12 @@ roles:
 
 This section defines global parameters for `rolesnap`.
 
-| Field          | Type        | Required | Description                                                                                                                                 |
-|----------------|-------------|----------|---------------------------------------------------------------------------------------------------------------------------------------------|
-| `project_root` | `string`    | **Yes**  | The **absolute path** to your project's source code root. All relative paths in the `roles` block are resolved against this directory.        |
-| `docs_root`    | `string`    | No       | The **absolute path** to your documentation folder, if it lives outside `project_root`. If provided, paths in a role's `docs` field will be resolved against this. |
-| `exclude_dirs` | `list[str]` | No       | A list of directory or file names to globally ignore during scans (e.g., `node_modules`, `.idea`). This extends the built-in exclusion list. |
-| `utils_dirs`   | `list[str]` | No       | A list of shared utility/helper directories. These are only included in a snapshot if you use the `--include-utils` flag with `rolesnap role`.      |
+| Field          | Type        | Required | Description                                                                                                                                                              |
+|----------------|-------------|----------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `project_root` | `string`    | **Yes**  | The **absolute path** to your project's source code root. All relative paths in the `roles` block are resolved against this directory.                                 |
+| `docs_root`    | `string`    | No       | The **absolute path** to your documentation folder, if it lives outside `project_root`. If provided, paths in a role's `docs` field will be resolved against this.          |
+| `exclude_dirs` | `list[str]` | No       | A list of **glob patterns** for files/directories to ignore globally. Patterns are matched against both the full relative path (e.g., `build/**`, `**/__pycache__/**`) and individual file/directory names (e.g., `*.pyc`, `.DS_Store`). |
+| `utils_dirs`   | `list[str]` | No       | A list of shared utility/helper directories. These are only included in a snapshot if you use the `--include-utils` flag with `rolesnap role`.                               |
 
 ---
 
@@ -56,11 +56,11 @@ When you run `rolesnap role <name>`, the generated JSON is grouped into categori
 
 | Snapshot Category      | Origin                                                                                             |
 |------------------------|----------------------------------------------------------------------------------------------------|
-| `Collected Domain`     | The `external_domain` of the selected role **plus** the `external_domain` of all roles in its `imports` list (recursively). |
-| `Collected Ports`      | The `external_ports` of the selected role **plus** the `external_ports` of all roles in its `imports` list (recursively).  |
+| `Collected Domain`     | The `external_domain` of the selected role **plus** the `external_domain` of all roles in its `imports` list (from direct imports). |
+| `Collected Ports`      | The `external_ports` of the selected role **plus** the `external_ports` of all roles in its `imports` list (from direct imports).  |
 | `Internal Logic`       | The `internal_logic` of **only** the selected role. If `--include-utils` is used, `settings.utils_dirs` are added here. |
 | `Base Tasks`           | The `base_tasks` of **only** the selected role.                                                                    |
-| `Collected Base Tasks` | The `base_tasks` of all roles in the `imports` list (recursively).                                                 |
+| `Collected Base Tasks` | The `base_tasks` of all roles in the `imports` list (from direct imports).                                                 |
 | `Advanced Tasks`       | The `advanced_tasks` of **only** the selected role.                                                                |
 | `Docs`                 | The `docs` of **only** the selected role.                                                                          |
 

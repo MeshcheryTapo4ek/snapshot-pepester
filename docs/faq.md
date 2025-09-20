@@ -4,11 +4,11 @@
 
 There are several common reasons a file might not appear in your snapshot:
 
-1.  **It's in `exclude_dirs`**: Check the `settings.exclude_dirs` list in your `rolesnap.yaml`. If any part of the file's path matches an entry in this list (e.g., `node_modules`), it will be skipped.
+1.  **It's too large**: By default, files larger than 2 MiB are skipped to avoid bloating the snapshot. You can change this limit with the `--max-file-size` flag.
 
-2.  **It has a binary extension**: `rolesnap` is designed for source code and ignores common binary file types by default (e.g., `.png`, `.jpg`, `.pdf`, `.zip`).
+2.  **It matches an exclusion pattern**: Check the `settings.exclude_dirs` list in your `rolesnap.yaml`. This list uses glob patterns that are matched against both full relative paths (e.g., `**/__pycache__/**`, `build/**`) and individual file/directory names (e.g., `*.log`, `.venv`). If a path matches, it will be skipped.
 
-3.  **It's ignored by Git**: If your project is a Git repository, `rolesnap` may respect the patterns in your `.gitignore` file.
+3.  **It has a default binary/media extension**: The default `exclude_dirs` list is extensive and includes common image, video, audio, and binary file types (`.png`, `.jpg`, `.pyc`, `.pdf`, etc.).
 
 4.  **It's not part of the role**: Double-check the paths in your role definition. The file must be located under one of the directories specified in the role you are snapshotting.
 
@@ -16,7 +16,7 @@ There are several common reasons a file might not appear in your snapshot:
 
 - **Be specific**: Instead of using `rolesnap full`, always prefer `rolesnap role <name>`. This limits the scan to only the files relevant to that role.
 
-- **Tune `exclude_dirs`**: Make sure your `exclude_dirs` list is comprehensive. Including build output directories, caches (`.next`, `.mypy_cache`), and large asset folders can significantly speed up the file search.
+- **Tune `exclude_dirs`**: Make sure your `exclude_dirs` list is comprehensive. Including build output directories (`build/`, `dist/`), caches (`.next/`, `.mypy_cache/`), and large asset folders can significantly speed up the file search because `rolesnap` can skip walking these directories entirely.
 
 - **Use `--hide-files`**: If you only need the file structure and not the content, using the `--hide-files` flag is much faster as it avoids reading the files from disk.
 

@@ -1,0 +1,73 @@
+name: Release & Publish on "release:X.Y.Z" commit
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    if: ${{ startsWith(github.event.head_commit.message, 'release:') }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract version from commit message
+        id: getver
+        shell: bash
+        run: |
+          MSG="${{ github.event.head_commit.message }}"
+          if [[ "$MSG" =~ ^release:([0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "version=${BASH_REMATCH[1]}" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Commit message must be exactly 'release:X.Y.Z' (e.g. release:0.8.0)"
+            exit 1
+          fi
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install uv
+        run: pipx install uv
+
+      - name: Build sdist and wheel
+        run: uvx --from build pyproject-build
+
+      - name: Verify pyproject version matches commit
+        id: verify
+        shell: bash
+        run: |
+          PKG_VER=$(python - <<'PY'
+          from pathlib import Path
+          import tomllib
+          print(tomllib.loads(Path("pyproject.toml").read_text())["project"]["version"])
+          PY
+          )
+          echo "pyproject=${PKG_VER}"
+          if [[ "${PKG_VER}" != "${{ steps.getver.outputs.version }}" ]]; then
+            echo "::error::Version mismatch: pyproject=${PKG_VER}, commit=${{ steps.getver.outputs.version }}"
+            exit 1
+          fi
+
+      - name: Twine check
+        run: uvx --from twine twine check dist/*
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.getver.outputs.version }}
+          name: rolesnap v${{ steps.getver.outputs.version }}
+          generate_release_notes: true
+          files: |
+            dist/*
+
+      - name: Publish to PyPI via OIDC
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          verbose: true

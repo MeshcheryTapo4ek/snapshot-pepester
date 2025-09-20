@@ -15,29 +15,16 @@ settings:
   # --- Project Paths ---
   # REQUIRED: The absolute path to the root of your source code repository.
   # The tool will resolve all relative paths inside 'roles' against this root.
-  # Example: "/home/user/my-awesome-project/src"
   project_root: "/path/to/your/project"
   # OPTIONAL: The absolute path to your documentation folder, if it lives
   # outside the project_root (e.g., in a sibling directory).
-  # Example: "/home/user/my-awesome-project/docs"
   docs_root: "/path/to/your/docs"
   # --- Global Exclusions ---
   # A list of directory or file names to ALWAYS ignore during scanning.
+  # additional to default ignores like 'png', 'jpg', 'zip', etc.
   exclude_dirs:
     - ".git"
     - ".venv"
-    - "node_modules"
-    - "__pycache__"
-    - "build"
-    - "dist"
-    - "*.egg-info"
-    - "logs"
-    - "__pycache__"
-    - ".mypy_cache"
-    - ".pytest_cache"
-    - ".ruff_cache"
-    - ".idea"
-    - ".vscode"
 
   # --- Shared Code ---
   # A list of common utility directories that can be optionally included

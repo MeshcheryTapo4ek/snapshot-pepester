@@ -5,10 +5,10 @@ from pathlib import Path
 from .paths import safe_rel_key
 
 
-def compute_self_scan_inputs(project_root: Path, cli_file: Path, config_path: Path) -> list[str]:
+def compute_self_scan_inputs(project_root: Path, cli_dir: Path, config_path: Path) -> list[str]:
     """
     Build a list of paths so that self-scan covers:
-      - the CLI file,
+      - the CLI directory,
       - the rolesnap.core package (resolved dynamically),
       - the YAML config used.
     Prefer relative POSIX keys; skip missing entries; deduplicate results.
@@ -25,8 +25,8 @@ def compute_self_scan_inputs(project_root: Path, cli_file: Path, config_path: Pa
         seen.add(key)
         results.append(key)
 
-    # 1) CLI file
-    add(cli_file)
+    # 1) CLI directory
+    add(cli_dir)
 
     # 2) rolesnap.core package: try import-based resolution first
     pkg_candidate: Path | None = None
@@ -42,7 +42,7 @@ def compute_self_scan_inputs(project_root: Path, cli_file: Path, config_path: Pa
 
     # Fallback candidates: project root and CLI directory
     add(project_root / "rolesnap" / "core")
-    add(cli_file.parent / "core")
+    add(cli_dir / "core")
 
     # 3) YAML config
     add(config_path)

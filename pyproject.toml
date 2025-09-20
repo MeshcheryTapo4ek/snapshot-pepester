@@ -1,6 +1,6 @@
 [project]
 name = "rolesnap"
-version = "0.7.0"
+version = "0.8.0"
 description = "Structured, role-based code snapshots for LLMs. Enforce architecture boundaries."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -29,7 +29,7 @@ dependencies = [
 
 [project.urls]
 Homepage = "https://github.com/MeshcheryTapo4ek/snapshot-pepester"
-Changelog = "https://github.com/MeshcheryTapo4ek/snapshot-pepester/blob/main/CHANGELOG.md"
+Changelog = "https://meshcherytapo4ek.github.io/snapshot-pepester/changelog/"
 Issues = "https://github.com/MeshcheryTapo4ek/snapshot-pepester/issues"
 Documentation = "https://meshcherytapo4ek.github.io/snapshot-pepester"
 
@@ -37,7 +37,7 @@ Documentation = "https://meshcherytapo4ek.github.io/snapshot-pepester"
 where = ["src"]
 
 [tool.setuptools.package-data]
-rolesnap = ["examples/*.yaml"]
+rolesnap = ["examples/*.yaml", "py.typed"]
 
 [project.scripts]
 rolesnap = "rolesnap.cli:main"

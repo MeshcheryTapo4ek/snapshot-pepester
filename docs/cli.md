@@ -12,7 +12,7 @@ These flags can be used with any command.
 |------------------|------------|---------------------------------------------------------------------------------------------------------|
 | `--config`       | `PATH`     | Path to `rolesnap.yaml`. If not set, uses the `ROLESNAP_CONFIG` environment variable.                     |
 | `--output`       | `PATH`     | Path to write the snapshot JSON file to. Defaults to `rolesnap.json` in the project root.               |
-| `--max-bytes`    | `INTEGER`  | Truncate file contents to a maximum number of bytes. Useful for very large files.                       |
+| `--max-file-size`| `INTEGER`  | Skip files larger than N bytes (default: 2097152, i.e., 2 MiB). The file will not be read from disk.      |
 | `--hide-files`   | (none)     | Do not include file contents in the snapshot, only file paths.                                          |
 | `--quiet`        | (none)     | Suppress all non-essential output, including the banner and progress bars.                              |
 | `--no-color`     | (none)     | Disable colored output.                                                                                 |
@@ -142,7 +142,7 @@ Creates a snapshot of the entire project, respecting the global `exclude_dirs` s
 **Usage:**
 ```bash
 # Creates rolesnap.json for the full project
-rolesnap full --max-bytes 50000
+rolesnap full
 ```
 
 **Example JSON Output (`rolesnap.json`):**
